@@ -1,0 +1,35 @@
+# Emulate 20 publishers sending two records per second
+# for 60 seconds.
+config:
+  target: "my_awesome_stream"
+  kinesis:
+    region: "eu-west-1"
+  phases:
+    - arrivalCount: 10
+      duration: 1
+  engines:
+    kinesis: {}
+
+scenarios:
+  - name: "Push to stream"
+    engine: kinesis
+    flow:
+      - count: 60
+        loop:
+        - putRecord:
+            partitionKey: "testPk"
+            # data may be a string or an object. Objects
+            # will be JSON.stringified.
+            data:
+              eventType: "view"
+              objectId: "ba0ec3de-26fe-4874-a74d-b72527160278"
+              timestamp: 1492975372004
+              location: "London, UK"
+        - putRecord:
+            partitionKey: "testPk"
+            data:
+              eventType: "view"
+              objectId: "ff0ed9de-26be-7654-f90c-b974117161954"
+              timestamp: 1492975372004
+              location: "London, UK"
+        - think: 1
