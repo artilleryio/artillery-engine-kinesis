@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node test/index.js",
-    "commitmsg": "conventional-changelog-lint -e"
+    "commitmsg": "conventional-changelog-lint -e",
+    "precommit": "semistandard"
   },
   "keywords": [
     "kinesis",
