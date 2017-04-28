@@ -67,3 +67,7 @@ scenarios:
 ```
 AWS_PROFILE=dev artillery run my_script.yml
 ```
+
+### License
+
+[MPL 2.0](https://www.mozilla.org/en-US/MPL/2.0/)
