@@ -3,7 +3,7 @@ const debug = require('debug')('engine:kinesis');
 const A = require('async');
 const _ = require('lodash');
 
-function KinesisEngine(script, ee, helpers) {
+function KinesisEngine (script, ee, helpers) {
   this.script = script;
   this.ee = ee;
   this.helpers = helpers;
@@ -11,32 +11,24 @@ function KinesisEngine(script, ee, helpers) {
   return this;
 }
 
-// Called externally from runner
-KinesisEngine.prototype.createScenario = function createScenario(scenarioSpec, ee) {
-  // Skeleton working
-  // Write a test
-  // Make think, loop, and putRecord work
-  let tasks = scenarioSpec.flow.map((rs) => {
-    return this.step(rs, ee);
-  });
+KinesisEngine.prototype.createScenario = function createScenario (scenarioSpec, ee) {
+  const tasks = scenarioSpec.flow.map(rs => this.step(rs, ee));
 
   return this.compile(tasks, scenarioSpec.flow, ee);
 };
 
-KinesisEngine.prototype.step = function step(rs, ee) {
+KinesisEngine.prototype.step = function step (rs, ee) {
   const self = this;
 
   if (rs.loop) {
-    let steps = rs.loop.map((loopStep) => {
-      return this.step(loopStep, ee);
-    });
+    const steps = rs.loop.map(loopStep => this.step(loopStep, ee));
 
     return this.helpers.createLoopWithCount(rs.count || -1, steps);
   }
 
   if (rs.log) {
-    return function log(context, callback) {
-      return process.nextTick(function() { callback(null, context); });
+    return function log (context, callback) {
+      return process.nextTick(function () { callback(null, context); });
     };
   }
 
@@ -45,23 +37,23 @@ KinesisEngine.prototype.step = function step(rs, ee) {
   }
 
   if (rs.function) {
-    return function(context, callback) {
+    return function (context, callback) {
       let func = self.config.processor[rs.function];
       if (!func) {
-        return process.nextTick(function() { callback(null, context); });
+        return process.nextTick(function () { callback(null, context); });
       }
 
-      return func(context, ee, function() {
+      return func(context, ee, function () {
         return callback(null, context);
       });
     };
   }
 
   if (rs.putRecord) {
-    return function putRecord(context, callback) {
-      const data = typeof rs.putRecord.data === 'object' ?
-            JSON.stringify(rs.putRecord.data) :
-            String(rs.putRecord.data);
+    return function putRecord (context, callback) {
+      const data = typeof rs.putRecord.data === 'object'
+            ? JSON.stringify(rs.putRecord.data)
+            : String(rs.putRecord.data);
 
       const params = {
         Data: data,
@@ -72,7 +64,7 @@ KinesisEngine.prototype.step = function step(rs, ee) {
       };
 
       ee.emit('request');
-      context.kinesis.putRecord(params, function(err, data) {
+      context.kinesis.putRecord(params, function (err, data) {
         if (err) {
           debug(err);
           ee.emit('error', err);
@@ -86,12 +78,12 @@ KinesisEngine.prototype.step = function step(rs, ee) {
     };
   }
 
-  return function(context, callback) {
+  return function (context, callback) {
     return callback(null, context);
   };
 };
 
-KinesisEngine.prototype.compile = function compile(tasks, scenarioSpec, ee) {
+KinesisEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
   const self = this;
   return function scenario(initialContext, callback) {
     const init = function init(next) {
@@ -104,7 +96,7 @@ KinesisEngine.prototype.compile = function compile(tasks, scenarioSpec, ee) {
 
     A.waterfall(
       steps,
-      function done(err, context) {
+      function done (err, context) {
         if (err) {
           debug(err);
         }
