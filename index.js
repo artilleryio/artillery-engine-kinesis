@@ -85,9 +85,17 @@ KinesisEngine.prototype.step = function step (rs, ee) {
 
 KinesisEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
   const self = this;
-  return function scenario(initialContext, callback) {
-    const init = function init(next) {
-      initialContext.kinesis = new Kinesis({ region: self.script.config.kinesis.region });
+  return function scenario (initialContext, callback) {
+    const init = function init (next) {
+      let opts = {
+        region: self.script.config.kinesis.region || 'us-east-1'
+      };
+
+      if (self.script.config.kinesis.endpoint) {
+        opts.endpoint = self.script.config.kinesis.endpoint;
+      }
+
+      initialContext.kinesis = new Kinesis(opts);
       ee.emit('started');
       return next(null, initialContext);
     };
