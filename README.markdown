@@ -1,12 +1,12 @@
 # Artillery.io AWS Kinesis Plugin
 
-<p style="font-style: italic">Load Test AWS Kinesis with <a href="https://artillery.io">Artillery.io</a></p>
-
-This Artillery plugin allows you to load test AWS Kinesis streams.
+<p align="center">
+    <em>Load test AWS Kinesis with <a href="https://artillery.io">Artillery.io</a></em>
+</p>
 
 ## Why?
 
-Load testing a Kinesis stream will help you answer question like **"have we provisioned enough shards to be able to handle expected volume?"** and **"are our consumers able to handle the amount of messages that will be streamed via Kinesis?"**
+Load testing a Kinesis stream will help you answer question like _"have we provisioned enough shards to be able to handle expected volume?"_ and _"are our consumers able to handle the amount of messages that will be streamed via Kinesis?"_
 
 Take guesswork out of provisioning capacity for your Kinesis streams and make sure your consumers can scale to process incoming data.
 
