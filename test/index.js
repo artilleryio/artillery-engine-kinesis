@@ -7,22 +7,22 @@
 const test = require('tape');
 const EventEmitter = require('events');
 
-const KinesisEngine = require('..');
+const SqsEngine = require('..');
 
 const script = {
   config: {
-    target: 'my_awesome_stream',
-    kinesis: {
+    target: 'https://sqs.us-east-1.amazonaws.com/012345678901/my-queue',
+    sqs: {
       region: 'us-east-1'
     }
   },
   scenarios: [{
-    name: 'Push data to stream',
-    engine: 'kinesis',
+    name: 'Send messages to queue',
+    engine: 'sqs',
     flow: [
       {
-        putRecord: {
-          data: 'A very boring payload'
+        sendMessage: {
+          messageBody: 'A very boring payload'
         }
       }
     ]
@@ -31,7 +31,7 @@ const script = {
 
 test('Engine interface', function (t) {
   const events = new EventEmitter();
-  const engine = new KinesisEngine(script, events, {});
+  const engine = new SqsEngine(script, events, {});
   const scenario = engine.createScenario(script.scenarios[0], events);
   t.assert(engine, 'Can construct an engine');
   t.assert(typeof scenario === 'function', 'Can create a scenario');

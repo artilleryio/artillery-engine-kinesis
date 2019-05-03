@@ -2,84 +2,55 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const Kinesis = require('aws-sdk/clients/kinesis');
-const debug = require('debug')('engine:kinesis');
+const sqs = require('aws-sdk/clients/sqs');
+const debug = require('debug')('engine:sqs');
 const A = require('async');
+
 const _ = require('lodash');
 
-function KinesisEngine (script, ee, helpers) {
-  this.script = script;
-  this.ee = ee;
-  this.helpers = helpers;
+const stepHandlers = require('./stepHandlers');
+
+let engineUtil, script, ee;
+
+function SqsEngine (_script, _ee, _engineUtil) {
+  engineUtil = _engineUtil;
+  script = _script;
+  ee = _ee;
 
   return this;
 }
 
-KinesisEngine.prototype.createScenario = function createScenario (scenarioSpec, ee) {
+SqsEngine.prototype.createScenario = function createScenario (scenarioSpec, ee) {
   const tasks = scenarioSpec.flow.map(rs => this.step(rs, ee));
-
   return this.compile(tasks, scenarioSpec.flow, ee);
 };
 
-KinesisEngine.prototype.step = function step (rs, ee) {
-  const self = this;
+SqsEngine.prototype.step = function step (rs, ee) {
+  const handlers = stepHandlers({
+    engineUtil,
+    script,
+    rs,
+    ee
+  });
 
   if (rs.loop) {
-    const steps = rs.loop.map(loopStep => this.step(loopStep, ee));
-
-    return this.helpers.createLoopWithCount(rs.count || -1, steps);
+    return handlers.createLoopHandler(this.step);
   }
 
   if (rs.log) {
-    return function log (context, callback) {
-      return process.nextTick(function () { callback(null, context); });
-    };
+    return handlers.createLogHandler(this.step);
   }
 
   if (rs.think) {
-    return this.helpers.createThink(rs, _.get(self.config, 'defaults.think', {}));
+    return handlers.createThinkHandler(this.step);
   }
 
   if (rs.function) {
-    return function (context, callback) {
-      let func = self.config.processor[rs.function];
-      if (!func) {
-        return process.nextTick(function () { callback(null, context); });
-      }
-
-      return func(context, ee, function () {
-        return callback(null, context);
-      });
-    };
+    return handlers.createFunctionHandler(this.step);
   }
 
-  if (rs.putRecord) {
-    return function putRecord (context, callback) {
-      const data = typeof rs.putRecord.data === 'object'
-            ? JSON.stringify(rs.putRecord.data)
-            : String(rs.putRecord.data);
-
-      const params = {
-        Data: data,
-        PartitionKey: rs.putRecord.partitionKey,
-        StreamName: rs.putRecord.streamName || self.script.config.target,
-        ExplicitHashKey: rs.putRecord.explicitHashKey,
-        SequenceNumberForOrdering: rs.putRecord.sequenceNumberForOrdering
-      };
-
-      ee.emit('request');
-      context.kinesis.putRecord(params, function (err, data) {
-        if (err) {
-          debug(err);
-          ee.emit('error', err);
-          return callback(err, context);
-        }
-
-        ee.emit('response', 0, 0, context._uid); // FIXME
-        debug(data);
-        return callback(null, context);
-      });
-    };
+  if (rs.sendMessage) {
+    return handlers.createSendMessageHandler(this.step);
   }
 
   return function (context, callback) {
@@ -87,24 +58,19 @@ KinesisEngine.prototype.step = function step (rs, ee) {
   };
 };
 
-KinesisEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
-  const self = this;
+SqsEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
   return function scenario (initialContext, callback) {
     const init = function init (next) {
       let opts = {
-        region: self.script.config.kinesis.region || 'us-east-1'
+        region: script.config.sqs.region || 'us-east-1'
       };
 
-      if (self.script.config.kinesis.endpoint) {
-        opts.endpoint = self.script.config.kinesis.endpoint;
-      }
-
-      initialContext.kinesis = new Kinesis(opts);
+      initialContext.sqs = new sqs(opts);
       ee.emit('started');
       return next(null, initialContext);
     };
 
-    let steps = [init].concat(tasks);
+    const steps = [init].concat(tasks);
 
     A.waterfall(
       steps,
@@ -118,4 +84,4 @@ KinesisEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
   };
 };
 
-module.exports = KinesisEngine;
+module.exports = SqsEngine;

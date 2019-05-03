@@ -1,15 +1,14 @@
-# Artillery.io AWS Kinesis Plugin
+# Artillery.io AWS SQS Plugin
 
 <p align="center">
-    <em>Load test AWS Kinesis with <a href="https://artillery.io">Artillery.io</a></em>
+    <em>Load test AWS SQS with <a href="https://artillery.io">Artillery.io</a></em>
 </p>
 
 ## Why?
 
-Load testing a Kinesis stream will help you answer question like _"have we provisioned enough shards to be able to handle expected volume?"_ and _"are our consumers able to handle the amount of messages that will be streamed via Kinesis?"_
+Load testing a SQS queue will help you answer question like _"have we configured appropriate DelaySeconds and VisibilityTimeout?"_ and _"are our consumers able to handle the amount of messages that will be enqueued in SQS?"_
 
-Take guesswork out of provisioning capacity for your Kinesis streams and make sure your consumers can scale to process incoming data.
-
+Take guesswork out of configuring your SQS queues and make sure your consumers can scale to process incoming data.
 
 ## Usage
 
@@ -19,39 +18,39 @@ Take guesswork out of provisioning capacity for your Kinesis streams and make su
 
 ```
 # If Artillery is installed globally:
-npm install -g artillery-engine-kinesis
+npm install -g artillery-engine-sqs
 ```
 
 ### Use the plugin
 
-1. Set `config.target` to the name of the Kinesis stream
-2. Specify additional options in `config.kinesis`:
+1. Set `config.target` to the URL of the SQS queue
+2. Specify additional options in `config.sqs`:
     - `region` - AWS region (**default**: `us-east-1`)
-3. Set the `engine` property of the scenario to `kinesis`.
-4. Use `putRecord` in your scenario to push data to the stream.
+3. Set the `engine` property of the scenario to `sqs`.
+4. Use `sendMessage` in your scenario to send data to the queue.
 
 #### Example Script
 
 ```yaml
 config:
-  target: "analytics_events"
-  kinesis:
+  target: "https://sqs.us-east-1.amazonaws.com/012345678901/my-queue"
+  sqs:
     region: "us-east-1"
   # Emulate 10 publishers
   phases:
     arrivalCount: 10
     duration: 1
   engines:
-    kinesis: {}
+    sqs: {}
 
 scenarios:
   - name: "Push to stream"
     flow:
       - loop:
-        - putRecord:
+        - sendMessage:
            # data may be a string or an object. Objects
            # will be JSON.stringified.
-           data:
+           messageBody:
             eventType: "view"
             objectId: "ba0ec3de-26fe-4874-a74d-b72527160278"
             timestamp: 1492975372004

@@ -1,7 +1,7 @@
 {
-  "name": "artillery-engine-kinesis",
+  "name": "artillery-engine-sqs",
   "version": "1.1.0",
-  "description": "Load test AWS Kinesis with Artillery.io",
+  "description": "Load test AWS SQS with Artillery.io",
   "main": "index.js",
   "scripts": {
     "test": "node test/index.js",
@@ -12,9 +12,10 @@
     "kinesis",
     "load"
   ],
-  "author": "Hassy Veldstra <h@artillery.io>",
+  "author": "Morris Singer <morrsing@amazon.com>",
   "license": "MPL-2.0",
   "devDependencies": {
+    "chai": "^4.2.0",
     "conventional-changelog-lint": "^1.1.9",
     "debug": "^2.6.4",
     "eslint": "^3.19.0",
