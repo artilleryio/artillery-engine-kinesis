@@ -91,12 +91,11 @@ KinesisEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
   const self = this;
   return function scenario (initialContext, callback) {
     const init = function init (next) {
-      let opts = {
-        region: self.script.config.kinesis.region || 'us-east-1'
-      };
-
-      if (self.script.config.kinesis.endpoint) {
-        opts.endpoint = self.script.config.kinesis.endpoint;
+      let opts = {...self.script.config.kinesis}
+        
+      if (!opts.region) {
+        console.log(`WARNING: no AWS region provided. Defaulting to us-east-1`); // TODO: a 'warning' event
+        opts.region = 'us-east-1';
       }
 
       initialContext.kinesis = new Kinesis(opts);
