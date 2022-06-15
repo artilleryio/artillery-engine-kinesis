@@ -27,7 +27,7 @@ KinesisEngine.prototype.step = function step (rs, ee) {
   if (rs.loop) {
     const steps = rs.loop.map(loopStep => this.step(loopStep, ee));
 
-    return this.helpers.createLoopWithCount(rs.count || -1, steps);
+    return this.helpers.createLoopWithCount(rs.count || -1, steps, {});
   }
 
   if (rs.log) {
