@@ -91,8 +91,8 @@ KinesisEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
   const self = this;
   return function scenario (initialContext, callback) {
     const init = function init (next) {
-      let opts = {...self.script.config.kinesis}
-        
+      let opts = {...self.script.config.kinesis};
+
       if (!opts.region) {
         console.log(`WARNING: no AWS region provided. Defaulting to us-east-1`); // TODO: a 'warning' event
         opts.region = 'us-east-1';
