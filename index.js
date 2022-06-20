@@ -42,7 +42,7 @@ KinesisEngine.prototype.step = function step (rs, ee) {
 
   if (rs.function) {
     return function (context, callback) {
-      let func = self.config.processor[rs.function];
+      let func = self.script.config.processor[rs.function];
       if (!func) {
         return process.nextTick(function () { callback(null, context); });
       }
