@@ -1,6 +1,6 @@
 {
   "name": "artillery-engine-kinesis",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Load test AWS Kinesis with Artillery.io",
   "main": "index.js",
   "scripts": {
