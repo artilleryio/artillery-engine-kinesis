@@ -13,8 +13,6 @@ Take guesswork out of provisioning capacity for your Kinesis streams and make su
 
 ## Usage
 
-**Important:** The plugin requires Artillery `1.5.8-3` or higher.
-
 ### Install the plugin
 
 ```
@@ -65,7 +63,7 @@ scenarios:
 ### Run Your Script
 
 ```
-AWS_PROFILE=dev artillery run my_script.yml
+AWS_PROFILE=myprofile artillery run my_script.yml
 ```
 
 ### License
